@@ -24,11 +24,11 @@ export const continuous: TaskFactory<NodeJS.EventEmitter> = (gulp, context) => (
 };
 
 export const applyHooks: TaskFactory<void> = (gulp, context) => (done) => {
-  context.registerCommand(':serverTest', (args) => {
-    if (args.start) {
+  context.registerCommand('serverTest', (args) => {
+    if(args.start) {
       startServerTests();
     }
-    else if (args.stop) {
+    else if(args.stop) {
       stopServerTests();
     }
   },

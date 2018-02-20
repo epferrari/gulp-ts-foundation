@@ -1,6 +1,6 @@
 import {Gulp, TaskFunction} from 'gulp';
 import * as assert from 'assert';
-import {TaskContext, IContextOptions} from './taskContext';
+import {TaskContext, ContextOptions} from './taskContext';
 import {TaskFactory} from './taskFactory';
 import * as DefaultRegistry from 'undertaker-registry';
 
@@ -16,7 +16,7 @@ export class Registry extends DefaultRegistry {
 
   protected readonly ctx: TaskContext;
 
-  constructor(options: IContextOptions) {
+  constructor(options: ContextOptions) {
     super();
     assert(typeof options.rootPath === 'string', 'rootPath must be defined in Registry options');
     this.ctx = new TaskContext(options);
