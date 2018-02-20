@@ -4,7 +4,8 @@
     "module": "commonjs",
     "target": "es6",
     "experimentalDecorators": true,
-    "lib": ["es2016"]
+    "lib": ["es2016"],
+    "declaration": true
   },
   "include": [
     "./**/*.ts"

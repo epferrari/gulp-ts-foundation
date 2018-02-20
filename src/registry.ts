@@ -1,4 +1,3 @@
-
 import {Gulp, TaskFunction} from 'gulp';
 import * as assert from 'assert';
 import {TaskContext, IContextOptions} from './taskContext';

@@ -19,32 +19,17 @@ export const continuous: TaskFactory<NodeJS.EventEmitter> = (gulp, context) => (
   const retest = () => singleRun(gulp, context)();
   onExit(done);
   done();
+
   return (specWatcher = gulp.watch(specFiles(context), retest));
 };
 
 export const applyHooks: TaskFactory<void> = (gulp, context) => (done) => {
-  const {registerCommand} = context;
-  const writeFailure = () => process.stdout.write('No running server, cannot hook server specs\n');
-
-  registerCommand(':serverTest', (args) => {
+  context.registerCommand(':serverTest', (args) => {
     if (args.start) {
-      if (serverRunning && !specWatcher) {
-        singleRun(gulp, context)();
-        specWatcher = continuous(gulp, context)();
-      } else if (!serverRunning) {
-        writeFailure();
-      }
+      startServerTests();
     }
     else if (args.stop) {
-      if (serverRunning && specWatcher) {
-        // ooooold gaze watcher in gulp 3.x.x
-        process.stdout.write('stopping server tests\n');
-        (specWatcher as any).end();
-        specWatcher = null;
-      }
-      else if (!serverRunning) {
-        writeFailure();
-      }
+      stopServerTests();
     }
   },
     'Start running server specs, re-run as server recompiles',
@@ -52,4 +37,28 @@ export const applyHooks: TaskFactory<void> = (gulp, context) => (done) => {
   );
 
   done();
+
+  const writeFailure = () => process.stdout.write('No running server, cannot hook server specs\n');
+
+  const startServerTests = () => {
+    if(serverRunning && !specWatcher) {
+      singleRun(gulp, context)();
+      specWatcher = continuous(gulp, context)();
+    }
+    else if(!serverRunning) {
+      writeFailure();
+    }
+  };
+
+  const stopServerTests = () => {
+    if(serverRunning && specWatcher) {
+      // ooooold gaze watcher in gulp 3.x.x
+      process.stdout.write('stopping server tests\n');
+      (specWatcher as any).end();
+      specWatcher = null;
+    }
+    else if(!serverRunning) {
+      writeFailure();
+    }
+  };
 };

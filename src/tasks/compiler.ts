@@ -9,6 +9,7 @@ export const compileServer: TaskFactory<NodeJS.ReadWriteStream> = (gulp, {rootPa
   const project = tsProject || (tsProject =
     ts.createProject(`${rootPath}/src/server/tsconfig.json`)
   );
+
   return gulp.src(`${rootPath}/src/server/**/*.ts`)
     .pipe(sourcemaps.init())
     .pipe(project())
@@ -28,6 +29,7 @@ export const watchServer: TaskFactory<NodeJS.EventEmitter> = (gulp, context) => 
   const watcher: FSWatcher = gulp.watch(`${rootPath}/src/server/*`, recompile);
   onExit(watcher.close.bind(watcher));
   done();
+
   return watcher;
 };
 

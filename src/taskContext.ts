@@ -2,7 +2,7 @@ import {autobind} from 'core-decorators';
 import {ChildProcess} from 'child_process';
 import * as killTree from 'tree-kill';
 
-type ContextCommand = {
+export type ContextCommand = {
   handler: (args?: {[arg: string]: string | boolean}) => void;
   description: string;
   options?: string[];
@@ -111,6 +111,7 @@ export class TaskContext implements IContextOptions {
               } else {
                 acc[arg] = true;
               }
+
               return acc;
             }, {});
 
