@@ -1,7 +1,7 @@
 import {autobind} from 'core-decorators';
 import {ChildProcess} from 'child_process';
 import * as killTree from 'tree-kill';
-import {ContextCommands, ContextCommand} from './contextCommands';
+import {ContextCommands} from './contextCommands';
 
 export interface ContextOptions {
   rootPath: string;
@@ -30,7 +30,7 @@ export class TaskContext implements ContextOptions {
     this.commands.register('commands', this.commands.list, 'List available commands');
     this.commands.listen();
 
-    process.on('exit', this.exitGracefully);  
+    process.on('exit', this.exitGracefully);
   }
 
   public registerChildProcess(child: ChildProcess, options: {silent?: boolean} = {}): void {

@@ -4,7 +4,7 @@
   "description": "Base registry of gulp tasks for ts project",
   "main": "dist/registry.js",
   "scripts": {
-    "lint": "tslint --project ./src",
+    "lint": "tslint --project ./src --format stylish",
     "build": "tsc -p ./src"
   },
   "repository": {
