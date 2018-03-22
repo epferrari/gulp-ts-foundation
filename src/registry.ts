@@ -46,8 +46,8 @@ export class Registry extends DefaultRegistry {
     task('tslint', parallel('tslint:client', 'tslint:client'));
 
     task('client:prebuild', parallel('tslint:client', series('clean:client', 'statics:build')));
-    task('client:build', series('client:prebuild', webpackDevServer.serve));
-    task('client:devServer', series('client:prebuild', server.serve));
+    task('client:build', series('client:prebuild'/* webpack here */));
+    task('client:devServer', series('client:prebuild', webpackDevServer.serve));
 
     task('server:compile', compiler.compile);
 
