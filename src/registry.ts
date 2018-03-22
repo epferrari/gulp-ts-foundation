@@ -14,19 +14,19 @@ import * as devServer from './tasks/devServer';
 
 export class Registry extends DefaultRegistry {
 
-  protected readonly ctx: TaskContext;
+  protected readonly context: TaskContext;
 
   constructor(options: ContextOptions) {
     super();
     assert(typeof options.rootPath === 'string', 'rootPath must be defined in Registry options');
-    this.ctx = new TaskContext(options);
+    this.context = new TaskContext(options);
   }
 
   public init(gulp: Gulp) {
     super.init(gulp);
 
     const {task, parallel, series} = gulp;
-    const provide = (factory: TaskFactory<any>): TaskFunction => factory(gulp, this.ctx);
+    const provide = (factory: TaskFactory<any>): TaskFunction => factory(gulp, this.context);
 
     task('clean:client', provide(cleanClient));
     task('clean:server', provide(cleanServer));

@@ -10,16 +10,18 @@ export type ContextCommand = {
 };
 
 @autobind
-export class ContextCommands extends Map<string, ContextCommand> {
+export class ContextCommands {
+
+  private commands: Map<string, ContextCommand> = new Map<string, ContextCommand>();
 
   public list(): void {
-    const commands = Array.from(this.keys());
+    const commands = Array.from(this.commands.keys());
     process.stdout.write('\nAvailable Commands\n');
     process.stdout.write('invoke via :<command> [--arg1, --arg2, ...] or [--arg=value]\n');
     process.stdout.write('see command options below for accepted arguments\n\n');
 
     commands.forEach(name => {
-      const command = this.get(name);
+      const command = this.commands.get(name);
       process.stdout.write(`${name} -- ${command.description}\n`);
       if (command.options) {
         process.stdout.write(`   options: ${command.options.join(' ')}\n`);
@@ -27,15 +29,10 @@ export class ContextCommands extends Map<string, ContextCommand> {
     });
   }
 
-  public register(
-    command: string,
-    handler: ContextCommand['handler'],
-    description: string,
-    options?: string[]
-  ): void {
-    ensureUniqueCommand(this, command);
+  public register(command: string, contextCommand: ContextCommand): void {
+    this.ensureUniqueCommand(command);
     ensureCommandFormatting(command);
-    this.set(command, {handler, description, options});
+    this.commands.set(command, contextCommand);
   }
 
   public listen(): void {
@@ -59,10 +56,17 @@ export class ContextCommands extends Map<string, ContextCommand> {
   }
 
   private invoke(command: string, args: CommandArgs): void {
-    const cmd = this.get(command);
+    const cmd = this.commands.get(command);
     if(cmd) {
       cmd.handler(args);
     }
+  }
+
+  private ensureUniqueCommand(command: string): void {
+    assert(
+      !this.commands.has(command),
+      `Command ${command} already registered. Pick a unique command name`
+    );
   }
 }
 
@@ -82,13 +86,6 @@ function parseArgs(vArgs: string[]): CommandArgs {
 
     return acc;
   }, {});
-}
-
-function ensureUniqueCommand(commands: ContextCommands, command: string): void {
-  assert(
-    !commands.has(command),
-    `Command ${command} already registered. Pick a unique command name`
-  );
 }
 
 function ensureCommandFormatting(command: string): void {

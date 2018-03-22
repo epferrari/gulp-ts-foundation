@@ -26,8 +26,14 @@ export class TaskContext implements ContextOptions {
     this.buildDir = options.buildDir || (process.env.NODE_ENV === 'production' ? 'dist' : 'build');
     this.webpackConfigPath = options.webpackConfigPath;
 
-    this.commands.register('q', this.exit, 'Quit all tasks');
-    this.commands.register('commands', this.commands.list, 'List available commands');
+    this.commands.register('q', {
+      handler: this.exit,
+      description: 'Quit all tasks'
+    });
+    this.commands.register('commands', {
+      handler: this.commands.list,
+      description: 'List available commands'
+    });
     this.commands.listen();
 
     process.on('exit', this.exitGracefully);
