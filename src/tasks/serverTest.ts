@@ -1,65 +1,85 @@
+import {autobind} from 'core-decorators';
+import {FSWatcher} from 'fs';
+import * as gulp from 'gulp';
 import * as mocha from 'gulp-mocha';
 import * as debug from 'gulp-debug';
+import {noop} from 'lodash';
 import {TaskContext} from '../taskContext';
-import {TaskFactory} from '../taskFactory';
-import {running as serverRunning} from './server';
+import {TaskGroup} from '../taskGroup';
+import {Server} from './server';
 
-const specFiles = ({rootPath, buildDir}: TaskContext) => `${rootPath}/${buildDir}/**/*.spec.js`;
-let specWatcher: NodeJS.EventEmitter;
 
-export const singleRun: TaskFactory<NodeJS.ReadWriteStream> = (gulp, context) => () => {
-  return gulp
-    .src(specFiles(context))
-    .pipe(debug({title: 'Server test files:'}))
-    .pipe(mocha());
-};
+@autobind
+export class ServerTest extends TaskGroup {
 
-export const continuous: TaskFactory<NodeJS.EventEmitter> = (gulp, context) => (done) => {
-  const {onExit} = context;
-  const retest = () => singleRun(gulp, context)();
-  onExit(done);
-  done();
+  private server: Server;
+  private specFilesGlob: string;
+  private watcher: FSWatcher;
 
-  return (specWatcher = gulp.watch(specFiles(context), retest));
-};
+  constructor(context: TaskContext, server: Server) {
+    super(context);
+    this.server = server;
+    const {rootPath, buildDir} = context.config;
+    this.specFilesGlob = `${rootPath}/${buildDir}/**/*.spec.js`;
+  }
 
-export const applyHooks: TaskFactory<void> = (gulp, context) => (done) => {
-  context.registerCommand('serverTest', {
-    handler: (args) => {
-      if(args.start) {
-        startServerTests();
-      }
-      else if(args.stop) {
-        stopServerTests();
-      }
-    },
-    description: 'Start running server specs, re-run as server recompiles',
-    options: ['--start', '--stop']
-  });
+  public single(): NodeJS.ReadWriteStream {
+    return gulp
+      .src(this.specFilesGlob)
+      .pipe(debug({title: 'Server test files:'}))
+      .pipe(mocha());
+  }
 
-  done();
+  public continuous(done) {
+    const {onExit} = this.context;
+    onExit(done);
 
-  const writeFailure = () => process.stdout.write('No running server, cannot hook server specs\n');
+    this.single();
+    this.watcher = gulp.watch(this.specFilesGlob, this.single);
 
-  const startServerTests = () => {
-    if(serverRunning && !specWatcher) {
-      singleRun(gulp, context)();
-      specWatcher = continuous(gulp, context)();
+    done();
+
+    return this.watcher;
+  }
+
+  public applyHooks(done): void {
+    this.context.registerCommand('serverTest', {
+      handler: (args) => {
+        if (args.start) {
+          this.startServerTests();
+        }
+        else if (args.stop) {
+          this.stopServerTests();
+        }
+      },
+      description: 'Start running server specs, re-run as server recompiles',
+      options: ['--start', '--stop']
+    });
+
+    done();
+  }
+
+  private startServerTests(): void {
+    if (this.server.running && !this.watcher) {
+      this.continuous(noop);
     }
-    else if(!serverRunning) {
-      writeFailure();
+    else if (!this.server.running) {
+      logHookFailure();
     }
-  };
+  }
 
-  const stopServerTests = () => {
-    if(serverRunning && specWatcher) {
-      // ooooold gaze watcher in gulp 3.x.x
+  private stopServerTests(): void {
+    if (this.server.running && this.watcher) {
       process.stdout.write('stopping server tests\n');
-      (specWatcher as any).end();
-      specWatcher = null;
+      this.watcher.close();
+      this.watcher = null;
     }
-    else if(!serverRunning) {
-      writeFailure();
+    else if (!this.server.running) {
+      logHookFailure();
     }
-  };
-};
+  }
+}
+
+function logHookFailure(): void {
+  process.stdout.write('No running server, cannot hook server specs\n');
+}

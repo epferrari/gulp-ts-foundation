@@ -1,10 +1,18 @@
-import {TaskFactory} from '../taskFactory';
+import {autobind} from 'core-decorators';
 import * as del from 'del';
+import {TaskGroup} from '../taskGroup';
 
-export const cleanServer: TaskFactory<void> = (gulp, {rootPath, buildDir}) => () => {
-  return del([`${rootPath}/${buildDir}/server`]);
-};
+@autobind
+export class Cleaner extends TaskGroup {
+  public cleanServer() {
+    const {config: {rootPath, buildDir}} = this.context;
 
-export const cleanClient: TaskFactory<void> = (gulp, {rootPath, buildDir}) => () => {
-  return del([`${rootPath}/${buildDir}/{client,public}`]);
-};
+    return del([`${rootPath}/${buildDir}/server`]);
+  }
+
+  public cleanClient() {
+    const {config: {rootPath, buildDir}} = this.context;
+
+    return del([`${rootPath}/${buildDir}/{client,public}`]);
+  }
+}

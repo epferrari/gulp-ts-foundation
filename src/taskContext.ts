@@ -3,28 +3,24 @@ import {ChildProcess} from 'child_process';
 import * as killTree from 'tree-kill';
 import {ContextCommands} from './contextCommands';
 
-export interface ContextOptions {
+export interface ContextConfig {
   rootPath: string;
   buildDir?: string;
   webpackConfigPath?: string;
 }
 
 @autobind
-export class TaskContext implements ContextOptions {
-
-  public readonly rootPath: string;
-  public readonly buildDir: string;
-  public readonly webpackConfigPath: string;
+export class TaskContext {
 
   private childProcesses: {process: ChildProcess, options: {}}[] = [];
   private teardowns: (() => void)[] = [];
   private commands: ContextCommands = new ContextCommands();
+
+  public readonly config: ContextConfig;
   public registerCommand = this.commands.register;
 
-  constructor(options: ContextOptions) {
-    this.rootPath = options.rootPath;
-    this.buildDir = options.buildDir || (process.env.NODE_ENV === 'production' ? 'dist' : 'build');
-    this.webpackConfigPath = options.webpackConfigPath;
+  constructor(config: ContextConfig) {
+    this.config = mergeDefaultConfig(config);
 
     this.commands.register('q', {
       handler: this.exit,
@@ -64,6 +60,13 @@ export class TaskContext implements ContextOptions {
     });
     this.teardowns.forEach(cb => cb && cb());
   }
+}
+
+function mergeDefaultConfig(config: ContextConfig): ContextConfig {
+  return {
+    buildDir: (process.env.NODE_ENV === 'production' ? 'dist' : 'build'),
+    ...config
+  };
 }
 
 
