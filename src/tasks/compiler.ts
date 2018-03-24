@@ -8,6 +8,7 @@ import {TaskGroup} from '../taskGroup';
 @autobind
 export class ServerCompiler extends TaskGroup {
   private tsProject: ts.Project;
+  private watcher: FSWatcher;
 
   public compile(): NodeJS.ReadWriteStream {
     const {rootPath, buildDir} = this.context.config;
@@ -26,17 +27,24 @@ export class ServerCompiler extends TaskGroup {
       .pipe(gulp.dest(`${rootPath}/${buildDir}/server`));
   }
 
-  public watch(done): NodeJS.EventEmitter {
+  public watch(done): void {
     const {onExit, config: {rootPath}} = this.context;
-    const recompile = () => {
-      process.stdout.write('recompiling server...\n');
-      this.compile();
-    };
-    const watcher: FSWatcher = gulp.watch(`${rootPath}/src/server/*`, recompile);
-    onExit(watcher.close.bind(watcher));
+    this.watcher = gulp.watch(`${rootPath}/src/server/**/*`, this.recompile);
+    onExit(this.closeWatcher);
     done();
+  }
 
-    return watcher;
+  private recompile(): NodeJS.ReadWriteStream {
+    process.stdout.write('recompiling server...\n');
+    return this.compile();
+  }
+
+  private closeWatcher(): void {
+    if(this.watcher) {
+      process.stdout.write('closing server file watcher\n');
+      this.watcher.close();
+      this.watcher = null;
+    }
   }
 }
 
