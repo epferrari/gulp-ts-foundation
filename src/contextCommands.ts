@@ -40,7 +40,7 @@ export class ContextCommands {
       try {
         this.processInput(data);
       } catch (e) {
-        process.stdout.write(e);
+        process.stderr.write(`Error invoking command, ${e.message}`);
       }
     });
   }
