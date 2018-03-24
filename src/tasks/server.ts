@@ -28,6 +28,8 @@ export class Server extends TaskGroup {
     } as any)
       .on('start', () => this.serving = true)
       .on('end', () => this.serving = false)
-      .on('crash', () => this.serving = false);
+      .on('crash', () => this.serving = false)
+      .on('stdout', (message) => process.stdout.write(`[dev] ${message}`))
+      .on('stderr', (err) => process.stderr.write(`[dev] ${err}`));
   }
 }
