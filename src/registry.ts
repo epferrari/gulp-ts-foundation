@@ -15,10 +15,10 @@ export class Registry extends DefaultRegistry {
 
   protected readonly context: TaskContext;
 
-  constructor(options: ContextConfig) {
+  constructor(config: ContextConfig) {
     super();
-    assert(typeof options.rootPath === 'string', 'rootPath must be defined in Registry options');
-    this.context = new TaskContext(options);
+    assert(typeof config.rootPath === 'string', 'rootPath must be defined in Registry options');
+    this.context = new TaskContext(config);
   }
 
   public init(gulp: Gulp) {
