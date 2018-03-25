@@ -49,7 +49,8 @@ export class Registry extends DefaultRegistry {
     task('client:build', series('client:prebuild'/* webpack here */));
     task('client:devServer', series('client:prebuild', webpackDevServer.serve));
 
-    task('server:compile', compiler.compile);
+    task('server:precompile', (done) => done());
+    task('server:compile', series('server:precompile', compiler.compile));
 
     task('server:test:single', series(
       'server:compile',
