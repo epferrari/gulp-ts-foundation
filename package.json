@@ -1,6 +1,6 @@
 {
   "name": "gulp-ts-foundation",
-  "version": "0.0.7",
+  "version": "0.0.8",
   "description": "Base registry of gulp tasks for ts project",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
