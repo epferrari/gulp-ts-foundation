@@ -1,8 +1,10 @@
 import {Gulp} from 'gulp';
 import * as assert from 'assert';
-import {TaskContext, ContextConfig} from './taskContext';
 import * as DefaultRegistry from 'undertaker-registry';
 import * as asyncDone from 'async-done';
+
+import {TaskContext, ContextConfig} from './taskContext';
+import {TaskTracker} from './taskTracker';
 
 import {Cleaner} from './tasks/clean';
 import {Statics} from './tasks/statics';
@@ -27,6 +29,8 @@ export class Registry extends DefaultRegistry {
     super.init(gulp);
 
     const {task, parallel, series} = gulp;
+
+    const tracker = new TaskTracker(gulp);
 
     const server = new Server(this.context);
     const cleaner = new Cleaner(this.context);
