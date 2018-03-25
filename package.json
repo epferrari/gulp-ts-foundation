@@ -3,6 +3,7 @@
   "version": "0.0.4",
   "description": "Base registry of gulp tasks for ts project",
   "main": "dist/index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
     "lint": "tslint --project ./src --format stylish",
     "build": "tsc -p ./src"
