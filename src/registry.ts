@@ -40,12 +40,13 @@ export class Registry extends DefaultRegistry {
     const inject = taskName => {
       const fn = done => asyncDone(task(taskName), done);
       (fn as any).displayName = `[injected] ${taskName}`;
+
       return fn;
-    }
+    };
 
     task('clean:client', cleaner.cleanClient);
     task('clean:server', cleaner.cleanServer);
-    
+
     task('clean', parallel(
       inject('clean:client'),
       inject('clean:server')));
@@ -55,7 +56,7 @@ export class Registry extends DefaultRegistry {
     task('tslint:tasks', tslint.lintTasks);
     task('tslint:server', tslint.lintServer);
     task('tslint:client', tslint.lintClient);
-    
+
     task('tslint', parallel(
       inject('tslint:client'),
       inject('tslint:server')));
@@ -66,17 +67,17 @@ export class Registry extends DefaultRegistry {
         inject('clean:client'),
         inject('statics:build'))
     ));
-    
+
     task('client:build', series(
       inject('client:prebuild')
       /* TODO: add webpack here */));
-    
+
     task('client:devServer', series(
       inject('client:prebuild'),
       webpackDevServer.serve));
 
     task('server:precompile', done => done());
-    
+
     task('server:compile', series(
       inject('server:precompile'),
       compiler.compile));

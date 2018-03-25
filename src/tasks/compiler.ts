@@ -36,6 +36,7 @@ export class ServerCompiler extends TaskGroup {
 
   private recompile(): NodeJS.ReadWriteStream {
     process.stdout.write('recompiling server...\n');
+
     return this.compile();
   }
 
