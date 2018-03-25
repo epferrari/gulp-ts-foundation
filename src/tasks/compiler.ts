@@ -17,19 +17,22 @@ export class ServerCompiler extends TaskGroup {
       ts.createProject(`${rootPath}/src/server/tsconfig.json`)
     );
 
-    return gulp.src(`${rootPath}/src/server/**/*.ts`)
+    return project.src()
       .pipe(sourcemaps.init())
       .pipe(project())
       .pipe(sourcemaps.write('.', {
         includeContent: false,
         sourceRoot: './'
       }))
-      .pipe(gulp.dest(`${rootPath}/${buildDir}/server`));
+      .pipe(gulp.dest(`${rootPath}/${buildDir}`));
   }
 
   public watch(done): void {
     const {onExit, config: {rootPath}} = this.context;
-    this.watcher = gulp.watch(`${rootPath}/src/server/**/*`, this.recompile);
+    this.watcher = gulp.watch([
+      `${rootPath}/src/server/**/*`,
+      `${rootPath}/src/common/**/*`
+    ], {ignoreInitial: true}, this.recompile);
     onExit(this.closeWatcher);
     done();
   }

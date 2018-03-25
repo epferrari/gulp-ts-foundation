@@ -56,7 +56,11 @@ export class Registry extends DefaultRegistry {
       inject('clean:client'),
       inject('clean:server')));
 
-    task('statics:build', statics.build);
+    task('statics:public', statics.public);
+    task('statics:json', statics.json);
+    task('statics', parallel(
+      inject('statics:public'),
+      inject('statics:json')));
 
     task('tslint:tasks', tslint.lintTasks);
     task('tslint:server', tslint.lintServer);
@@ -70,7 +74,7 @@ export class Registry extends DefaultRegistry {
       inject('tslint:client'),
       series(
         inject('clean:client'),
-        inject('statics:build'))
+        inject('statics:public'))
     ));
 
     task('client:build', series(
@@ -81,7 +85,7 @@ export class Registry extends DefaultRegistry {
       inject('client:prebuild'),
       webpackDevServer.serve));
 
-    task('server:precompile', done => done());
+    task('server:precompile', inject('statics:json'));
 
     task('server:compile', series(
       inject('server:precompile'),
@@ -101,13 +105,13 @@ export class Registry extends DefaultRegistry {
 
     task('server:run', parallel(
       inject('tslint:server'),
-      parallel(
-        compiler.watch,
-        serverTest.applyHooks
-      ),
       series(
         inject('clean:server'),
         inject('server:compile'),
+        parallel(
+          compiler.watch,
+          serverTest.applyHooks
+        ),
         server.serve
       )
     ));
