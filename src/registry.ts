@@ -34,9 +34,12 @@ export class Registry extends DefaultRegistry {
     const serverTest = new ServerTest(this.context, server);
     const webpackDevServer = new WebpackDevServer(this.context);
 
+    // lazily get task dependencies so overridden task definitions are as part of these chains
+    const $ = taskName => done => task(taskName)(done);
+
     task('clean:client', cleaner.cleanClient);
     task('clean:server', cleaner.cleanServer);
-    task('clean', parallel('clean:client', 'clean:server'));
+    task('clean', parallel($('clean:client'), $('clean:server')));
 
     task('statics:build', statics.build);
 
@@ -45,20 +48,23 @@ export class Registry extends DefaultRegistry {
     task('tslint:client', tslint.lintClient);
     task('tslint', parallel('tslint:client', 'tslint:client'));
 
-    task('client:prebuild', parallel('tslint:client', series('clean:client', 'statics:build')));
-    task('client:build', series('client:prebuild'/* webpack here */));
-    task('client:devServer', series('client:prebuild', webpackDevServer.serve));
+    task('client:prebuild', parallel(
+      'tslint:client',
+      series($('clean:client'), $('statics:build'))
+    ));
+    task('client:build', series($('client:prebuild')/* webpack here */));
+    task('client:devServer', series($('client:prebuild'), webpackDevServer.serve));
 
-    task('server:precompile', (done) => done());
-    task('server:compile', series('server:precompile', compiler.compile));
+    task('server:precompile', done => done);
+    task('server:compile', series($('server:precompile'), compiler.compile));
 
     task('server:test:single', series(
-      'server:compile',
+      $('server:compile'),
       serverTest.single
     ));
 
     task('server:test', series(
-      parallel('server:test:single', compiler.watch),
+      parallel($('server:test:single'), compiler.watch),
       serverTest.continuous
     ));
 
@@ -69,15 +75,15 @@ export class Registry extends DefaultRegistry {
         serverTest.applyHooks
       ),
       series(
-        'clean:server',
-        'server:compile',
+        $('clean:server'),
+        $('server:compile'),
         server.serve
       )
     ));
 
-    task('dev', parallel('client:devServer', 'server:run'));
+    task('dev', parallel($('client:devServer'), $('server:run')));
 
-    task('default', task('dev'));
+    task('default', $('dev'));
   }
 }
 
