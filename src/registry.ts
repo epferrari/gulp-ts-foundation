@@ -30,6 +30,7 @@ export class Registry extends DefaultRegistry {
 
     const {task, parallel, series} = gulp;
 
+    /* tslint:disable-next-line */
     const tracker = new TaskTracker(gulp);
 
     const server = new Server(this.context);
