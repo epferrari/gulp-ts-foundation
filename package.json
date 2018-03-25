@@ -39,6 +39,7 @@
     "@types/node": "^9.4.6",
     "@types/undertaker-registry": "^1.0.1",
     "assert": "^1.4.1",
+    "async-done": "^1.2.4",
     "core-decorators": "^0.20.0",
     "del": "^3.0.0",
     "gulp": "^4.0.0",

@@ -2,6 +2,7 @@ import {Gulp} from 'gulp';
 import * as assert from 'assert';
 import {TaskContext, ContextConfig} from './taskContext';
 import * as DefaultRegistry from 'undertaker-registry';
+import * as asyncDone from 'async-done';
 
 import {Cleaner} from './tasks/clean';
 import {Statics} from './tasks/statics';
@@ -10,6 +11,7 @@ import {ServerCompiler} from './tasks/compiler';
 import {ServerTest} from './tasks/serverTest';
 import {Server} from './tasks/server';
 import {WebpackDevServer} from './tasks/webpackDevServer';
+
 
 export class Registry extends DefaultRegistry {
 
@@ -35,55 +37,80 @@ export class Registry extends DefaultRegistry {
     const webpackDevServer = new WebpackDevServer(this.context);
 
     // lazily get task dependencies so overridden task definitions are as part of these chains
-    const $ = taskName => done => task(taskName)(done);
+    const inject = taskName => {
+      const fn = done => asyncDone(task(taskName), done);
+      (fn as any).displayName = `[injected] ${taskName}`;
+      return fn;
+    }
 
     task('clean:client', cleaner.cleanClient);
     task('clean:server', cleaner.cleanServer);
-    task('clean', parallel($('clean:client'), $('clean:server')));
+    
+    task('clean', parallel(
+      inject('clean:client'),
+      inject('clean:server')));
 
     task('statics:build', statics.build);
 
     task('tslint:tasks', tslint.lintTasks);
     task('tslint:server', tslint.lintServer);
     task('tslint:client', tslint.lintClient);
-    task('tslint', parallel('tslint:client', 'tslint:client'));
+    
+    task('tslint', parallel(
+      inject('tslint:client'),
+      inject('tslint:server')));
 
     task('client:prebuild', parallel(
-      'tslint:client',
-      series($('clean:client'), $('statics:build'))
+      inject('tslint:client'),
+      series(
+        inject('clean:client'),
+        inject('statics:build'))
     ));
-    task('client:build', series($('client:prebuild')/* webpack here */));
-    task('client:devServer', series($('client:prebuild'), webpackDevServer.serve));
+    
+    task('client:build', series(
+      inject('client:prebuild')
+      /* TODO: add webpack here */));
+    
+    task('client:devServer', series(
+      inject('client:prebuild'),
+      webpackDevServer.serve));
 
-    task('server:precompile', done => done);
-    task('server:compile', series($('server:precompile'), compiler.compile));
+    task('server:precompile', done => done());
+    
+    task('server:compile', series(
+      inject('server:precompile'),
+      compiler.compile));
 
     task('server:test:single', series(
-      $('server:compile'),
+      inject('server:compile'),
       serverTest.single
     ));
 
     task('server:test', series(
-      parallel($('server:test:single'), compiler.watch),
+      parallel(
+        inject('server:test:single'),
+        compiler.watch),
       serverTest.continuous
     ));
 
     task('server:run', parallel(
-      'tslint:server',
+      inject('tslint:server'),
       parallel(
         compiler.watch,
         serverTest.applyHooks
       ),
       series(
-        $('clean:server'),
-        $('server:compile'),
+        inject('clean:server'),
+        inject('server:compile'),
         server.serve
       )
     ));
 
-    task('dev', parallel($('client:devServer'), $('server:run')));
+    task('dev', parallel(
+      inject('client:devServer'),
+      inject('server:run')));
 
-    task('default', $('dev'));
+    task('default', inject('dev'));
   }
 }
 
