@@ -49,6 +49,15 @@ export class Registry extends DefaultRegistry {
       return fn;
     };
 
+    const hook = taskName => {
+      const fn = done => {
+        process.stdout.write(`[hook] ${taskName}`);
+        done();
+      };
+      (fn as any).displayName = taskName;
+      task(taskName, fn);
+    };
+
     task('clean:client', cleaner.cleanClient);
     task('clean:server', cleaner.cleanServer);
 
@@ -58,6 +67,7 @@ export class Registry extends DefaultRegistry {
 
     task('statics:public', statics.public);
     task('statics:json', statics.json);
+    
     task('statics', parallel(
       inject('statics:public'),
       inject('statics:json')));
@@ -70,26 +80,33 @@ export class Registry extends DefaultRegistry {
       inject('tslint:client'),
       inject('tslint:server')));
 
-    task('client:prebuild', parallel(
-      inject('tslint:client'),
-      series(
-        inject('clean:client'),
-        inject('statics:public'))
-    ));
+    hook('client:prebuild');
 
     task('client:build', series(
-      inject('client:prebuild')
+      inject('client:prebuild'),
+      parallel(
+        inject('tslint:client'),
+        inject('clean:client')),
+      inject('statics:public')
       /* TODO: add webpack here */));
 
     task('client:devServer', series(
       inject('client:prebuild'),
+      parallel(
+        inject('tslint:client'),
+        inject('clean:client')),
+      inject('statics:public'),
       webpackDevServer.serve));
-
-    task('server:precompile', inject('statics:json'));
+    
+    hook('server:precompile');
 
     task('server:compile', series(
       inject('server:precompile'),
-      compiler.compile));
+      inject('statics:json'),
+      compiler.compile,
+      inject('server:postcompile')));
+    
+    hook('server:postcompile');
 
     task('server:test:single', series(
       inject('server:compile'),
@@ -103,22 +120,29 @@ export class Registry extends DefaultRegistry {
       serverTest.continuous
     ));
 
-    task('server:run', parallel(
-      inject('tslint:server'),
-      series(
-        inject('clean:server'),
-        inject('server:compile'),
-        parallel(
-          compiler.watch,
-          serverTest.applyHooks
-        ),
-        server.serve
-      )
-    ));
+    task('server:run', series(
+      parallel(
+        inject('tslint:server'),
+        inject('clean:server')),
+      inject('server:compile'),
+      parallel(
+        compiler.watch,
+        serverTest.applyHooks
+      ),
+      server.serve));
 
-    task('dev', parallel(
-      inject('client:devServer'),
-      inject('server:run')));
+    task('dev', series(
+      parallel(
+        inject('clean'),
+        inject('tslint')),
+      parallel(
+        inject('server:compile'),
+        inject('client:devServer')),
+      parallel(
+        compiler.watch,
+        serverTest.applyHooks),
+      server.serve));
+      
 
     task('default', inject('dev'));
   }
