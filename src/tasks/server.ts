@@ -1,4 +1,5 @@
 import {autobind} from 'core-decorators';
+import {isPlainObject} from 'lodash';
 import * as nodemon from 'gulp-nodemon';
 import {TaskGroup} from '../taskGroup';
 
@@ -29,7 +30,31 @@ export class Server extends TaskGroup {
       .on('start', () => this.serving = true)
       .on('end', () => this.serving = false)
       .on('crash', () => this.serving = false)
-      .on('stdout', (message) => process.stdout.write(`[dev] ${message}\n`))
-      .on('stderr', (err) => process.stderr.write(`[dev] ${err}\n`));
+      .on('stdout', (msg) => {
+        try {
+          const maybeObject = JSON.parse(msg);
+          if(isPlainObject(maybeObject)) {
+            // allow bunyan cli to format msg
+            process.stdout.write(msg);
+          } else {
+            process.stdout.write(`[dev] ${msg}\n`);
+          }
+        } catch(e) {
+          process.stdout.write(`[dev] ${msg}\n`);
+        }
+      })
+      .on('stderr', (err) => {
+        try {
+          const maybeObject = JSON.parse(err);
+          if (isPlainObject(maybeObject)) {
+            // allow bunyan cli to pick format msg
+            process.stderr.write(err);
+          } else {
+            process.stderr.write(`[dev] ${err}\n`);
+          }
+        } catch (e) {
+          process.stderr.write(`[dev] ${err}\n`);
+        }
+      });
   }
 }
