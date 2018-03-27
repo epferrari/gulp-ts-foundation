@@ -70,15 +70,14 @@ export class Registry extends DefaultRegistry {
       inject('tslint:client'),
       inject('tslint:server')));
 
-    task('client:prebuild', parallel(
-      inject('tslint:client'),
-      series(
-        inject('clean:client'),
-        inject('statics:public'))
-    ));
+    task('client:prebuild', series(
+      inject('clean:client'),
+      inject('statics:public')));
 
     task('client:build', series(
-      inject('client:prebuild')
+      parallel(
+        inject('tslint:client'),
+        inject('client:prebuild'))
       /* TODO: add webpack here */));
 
     task('client:devServer', series(
@@ -103,22 +102,26 @@ export class Registry extends DefaultRegistry {
       serverTest.continuous
     ));
 
-    task('server:run', parallel(
+    task('server:build', parallel(
       inject('tslint:server'),
-      series(
-        inject('clean:server'),
-        inject('server:compile'),
-        parallel(
-          compiler.watch,
-          serverTest.applyHooks
-        ),
-        server.serve
-      )
-    ));
+      inject('server:compile')));
+
+    task('server:run', series(
+      inject('clean:server'),
+      inject('server:compile'),
+      parallel(
+        compiler.watch,
+        serverTest.applyHooks
+      ),
+      server.serve));
 
     task('dev', parallel(
       inject('client:devServer'),
       inject('server:run')));
+
+    task('validate', parallel(
+      inject('tslint'),
+      inject('server:test:single')));
 
     task('default', inject('dev'));
   }
