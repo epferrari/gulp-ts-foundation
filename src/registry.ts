@@ -64,10 +64,12 @@ export class Registry extends DefaultRegistry {
 
     task('tslint:tasks', tslint.lintTasks);
     task('tslint:server', tslint.lintServer);
+    task('tslint:common', tslint.lintCommon);
     task('tslint:client', tslint.lintClient);
 
     task('tslint', parallel(
       inject('tslint:client'),
+      inject('tslint:common'),
       inject('tslint:server')));
 
     task('client:prebuild', series(

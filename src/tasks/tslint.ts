@@ -38,6 +38,18 @@ export class TsLinter extends TaskGroup {
       .pipe(tslintPlugin.report());
   }
 
+  public lintCommon(): NodeJS.ReadWriteStream {
+    const {rootPath} = this.context.config;
+
+    const program = this.serverProgram || (this.serverProgram =
+      tslint.Linter.createProgram(`${rootPath}/src/common/tsconfig.json`)
+    );
+
+    return gulp.src(`${rootPath}/src/common/**/*.ts`)
+      .pipe(tslintPlugin({formatter, program}))
+      .pipe(tslintPlugin.report());
+  }
+
   public lintClient(): NodeJS.ReadWriteStream {
     const {rootPath} = this.context.config;
 
