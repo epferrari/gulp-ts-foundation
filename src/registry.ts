@@ -82,9 +82,11 @@ export class Registry extends DefaultRegistry {
         inject('client:prebuild'))
       /* TODO: add webpack here */));
 
-    task('client:devServer', series(
+    task('webpack:devServer', webpackDevServer.serve);
+
+    task('client:dev', series(
       inject('client:prebuild'),
-      webpackDevServer.serve));
+      inject('webpack:devServer')));
 
     task('server:precompile', inject('statics:json'));
 
@@ -118,7 +120,7 @@ export class Registry extends DefaultRegistry {
       server.serve));
 
     task('dev', parallel(
-      inject('client:devServer'),
+      inject('client:dev'),
       inject('server:run')));
 
     task('validate', parallel(
