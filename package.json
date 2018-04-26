@@ -37,7 +37,6 @@
     "@types/gulp-nodemon": "0.0.32",
     "@types/gulp-sourcemaps": "0.0.32",
     "@types/mocha": "^5.0.0",
-    "@types/node": "^9.4.6",
     "@types/undertaker-registry": "^1.0.1",
     "assert": "^1.4.1",
     "async-done": "^1.2.4",
@@ -56,5 +55,8 @@
     "undertaker-registry": "^1.0.1",
     "webpack": "^4.4.1",
     "webpack-dev-server": "^3.1.1"
+  },
+  "devDependencies": {
+    "@types/node": "^9.6.6"
   }
 }

@@ -8,7 +8,7 @@ export class Statics extends TaskGroup {
     const {config: {rootPath, buildDir}} = this.context;
 
     return gulp
-      .src(`${rootPath}/src/public/*`)
+      .src(`${rootPath}/src/public/**/*`)
       .pipe(gulp.dest(`${rootPath}/${buildDir}/public`));
   }
 
