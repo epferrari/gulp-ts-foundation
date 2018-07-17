@@ -4,7 +4,7 @@ import {Registry} from './registry';
 
 import {Cleaner} from './tasks/clean';
 import {Statics} from './tasks/statics';
-import {TsLinter} from './tasks/tsLint';
+import {TsLinter} from './tasks/tslint';
 import {ServerCompiler} from './tasks/compiler';
 import {ServerTest} from './tasks/serverTest';
 import {Server} from './tasks/server';
