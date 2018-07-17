@@ -1,9 +1,9 @@
-import {TaskContext} from './taskContext';
+import {TaskContext, ContextConfig} from './taskContext';
 
-export class TaskGroup {
-  protected readonly context: TaskContext;
+export class TaskGroup<TConfig extends ContextConfig = ContextConfig> {
+  protected readonly context: TaskContext<TConfig>;
 
-  constructor(context: TaskContext) {
+  constructor(context: TaskContext<TConfig>) {
     this.context = context;
   }
 }

@@ -10,17 +10,17 @@ export interface ContextConfig {
 }
 
 @autobind
-export class TaskContext {
+export class TaskContext<TConfig extends ContextConfig = ContextConfig> {
 
   private childProcesses: {process: ChildProcess, options: {}}[] = [];
   private teardowns: (() => void)[] = [];
   private commands: ContextCommands = new ContextCommands();
 
-  public readonly config: ContextConfig;
+  public readonly config: TConfig;
   public registerCommand = this.commands.register;
 
-  constructor(config: ContextConfig) {
-    this.config = mergeDefaultConfig(config);
+  constructor(config: TConfig) {
+    this.config = mergeDefaultConfig<TConfig>(config);
 
     this.commands.register('q', {
       handler: this.exit,
@@ -62,10 +62,10 @@ export class TaskContext {
   }
 }
 
-function mergeDefaultConfig(config: ContextConfig): ContextConfig {
+function mergeDefaultConfig<TConfig extends ContextConfig>(config: TConfig): TConfig {
   return {
     buildDir: (process.env.NODE_ENV === 'production' ? 'dist' : 'build'),
-    ...config
+    ...(config as any)
   };
 }
 
