@@ -11,6 +11,7 @@ const formatter = 'stylish';
 export class TsLinter extends TaskGroup {
   private taskProgram: Program;
   private clientProgram: Program;
+  private commonProgram: Program;
   private serverProgram: Program;
 
   public lintTasks(): NodeJS.ReadWriteStream {
@@ -41,7 +42,7 @@ export class TsLinter extends TaskGroup {
   public lintCommon(): NodeJS.ReadWriteStream {
     const {rootPath} = this.context.config;
 
-    const program = this.serverProgram || (this.serverProgram =
+    const program = this.commonProgram || (this.commonProgram =
       tslint.Linter.createProgram(`${rootPath}/src/common/tsconfig.json`)
     );
 
