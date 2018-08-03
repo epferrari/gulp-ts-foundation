@@ -10,6 +10,7 @@ import {TaskTracker} from './taskTracker';
 @autobind
 export class Registry<TConfig extends ContextConfig = ContextConfig> extends DefaultRegistry {
   protected readonly context: TaskContext<TConfig>;
+  private gulp: Gulp;
 
   constructor(
     config: TConfig
@@ -21,13 +22,15 @@ export class Registry<TConfig extends ContextConfig = ContextConfig> extends Def
 
   public init(gulp: Gulp) {
     super.init(gulp);
+    // hackish
+    this.gulp = gulp;
     /* tslint:disable-next-line */
     const tracker = new TaskTracker(gulp);
   }
 
   // lazily load task dependencies so overridden task definitions are injected as part of these chains
   public inject(taskname: string): TaskFunction {
-    const fn = done => asyncDone(this.get(taskname), done);
+    const fn = done => asyncDone(this.gulp.registry().get(taskname), done);
     (fn as any).displayName = `[injected] ${taskname}`;
 
     return fn;
