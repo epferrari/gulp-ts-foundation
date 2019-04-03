@@ -38,16 +38,11 @@ export class Registry<TConfig extends ContextConfig = ContextConfig> extends Def
     return lazy;
   }
 
-  public override(taskname: string, override: (original: TaskFunction) => TaskFunction): TaskFunction {
-    const original = (done: DoneCallback) => {
-      const task = this.gulp.registry().get(taskname) || ((d: DoneCallback) => d());
-
-      return asyncDone(task, done);
-    };
+  public override(taskname: string, override: (original: TaskFunction) => TaskFunction): void {
+    const original: TaskFunction = this.gulp.registry().get(taskname) || ((d: DoneCallback) => d());
     const overridden: TaskFunction = (done: DoneCallback) => asyncDone(override(original), done);
-    overridden.displayName = `[override] ${taskname}`;
-
-    return overridden;
+    overridden.displayName = `[overriden] ${taskname}`;
+    this.gulp.task(taskname, overridden);
   }
 }
 
