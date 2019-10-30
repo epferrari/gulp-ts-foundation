@@ -11,7 +11,8 @@ type DoneCallback = (error?: any) => void;
 
 @autobind
 export class Registry<TConfig extends ContextConfig = ContextConfig> extends DefaultRegistry {
-  protected readonly context: TaskContext<TConfig>;
+  private _context: TaskContext<TConfig>;
+  private _config: TConfig;
   private gulp: Gulp;
 
   constructor(
@@ -19,13 +20,18 @@ export class Registry<TConfig extends ContextConfig = ContextConfig> extends Def
   ) {
     super();
     assert(typeof config.rootPath === 'string', 'rootPath must be defined in Registry options');
-    this.context = new TaskContext<TConfig>(config);
+    this._config = config;
+  }
+
+  public get context(): TaskContext<TConfig> {
+    return this._context;
   }
 
   public init(gulp: Gulp) {
     super.init(gulp);
     // hackish
     this.gulp = gulp;
+    this._context = new TaskContext<TConfig>(this._config, gulp);
     /* tslint:disable-next-line */
     const tracker = new TaskTracker(gulp);
   }

@@ -1,3 +1,4 @@
+import {Gulp} from 'gulp';
 import {autobind} from 'core-decorators';
 import {ChildProcess} from 'child_process';
 import * as killTree from 'tree-kill';
@@ -19,7 +20,7 @@ export class TaskContext<TConfig extends ContextConfig = ContextConfig> {
   public readonly config: TConfig;
   public registerCommand = this.commands.register;
 
-  constructor(config: TConfig) {
+  constructor(config: TConfig, gulp: Gulp) {
     this.config = mergeDefaultConfig<TConfig>(config);
 
     this.commands.register('q', {
@@ -30,7 +31,8 @@ export class TaskContext<TConfig extends ContextConfig = ContextConfig> {
       handler: this.commands.list,
       description: 'List available commands'
     });
-    this.commands.listen();
+
+    gulp.on('start', () => this.commands.listen());
 
     process.on('exit', this.exitGracefully);
   }
