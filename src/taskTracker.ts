@@ -8,7 +8,7 @@ type GulpTaskEvent = {
 
 @autobind
 export class TaskTracker {
-  private runningTasks: {[uid: string]: string} = {};
+  private runningTasks: Map<string, string> = new Map<string, string>();
   private exited: boolean = false;
 
   constructor(gulp: Gulp) {
@@ -17,13 +17,13 @@ export class TaskTracker {
   }
 
   private add({uid, name}: GulpTaskEvent): void {
-    this.runningTasks[uid] = name;
+    this.runningTasks.set(uid, name);
   }
 
   private remove({uid}: GulpTaskEvent): void {
-    delete this.runningTasks[uid];
+    this.runningTasks.delete(uid);
     setTimeout(() => {
-      if(!this.exited && Object.keys(this.runningTasks).length === 0) {
+      if(!this.exited && this.runningTasks.size === 0) {
         this.exited = true;
         process.exit();
       }
