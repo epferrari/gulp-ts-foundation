@@ -8,8 +8,10 @@ import {GulpEvent, RegistryEvents} from './events';
 export class TaskTracker {
   private runningTasks: Map<string, string> = new Map<string, string>();
   private exited: boolean = false;
+  private readonly bus: StrongBus.Bus<RegistryEvents>;
 
-  constructor(gulp: Gulp, private readonly bus: StrongBus.Bus<RegistryEvents>) {
+  constructor(gulp: Gulp, bus: StrongBus.Bus<RegistryEvents>) {
+    this.bus = bus;
     gulp
       .on('start', this.add)
       .on('start', (event: GulpEvent) => this.bus.emit('gulp_task_start', event))

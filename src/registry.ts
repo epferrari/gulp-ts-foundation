@@ -14,8 +14,8 @@ type DoneCallback = (error?: any) => void;
 
 @autobind
 export class Registry<TConfig extends ContextConfig = ContextConfig> extends DefaultRegistry {
-  private _context: TaskContext<TConfig>;
-  private _bus = new StrongBus.Bus<RegistryEvents>();
+  public readonly context: TaskContext<TConfig>;
+  private readonly eventbus = new StrongBus.Bus<RegistryEvents>();
   private gulp: Gulp;
 
   constructor(
@@ -23,11 +23,7 @@ export class Registry<TConfig extends ContextConfig = ContextConfig> extends Def
   ) {
     super();
     assert(typeof config.rootPath === 'string', 'rootPath must be defined in Registry options');
-    this._context = new TaskContext(config, this._bus);
-  }
-
-  public get context(): TaskContext<TConfig> {
-    return this._context;
+    this.context = new TaskContext(config, this.eventbus);
   }
 
   public init(gulp: Gulp) {
@@ -35,7 +31,7 @@ export class Registry<TConfig extends ContextConfig = ContextConfig> extends Def
     // hackish
     this.gulp = gulp;
     /* tslint:disable-next-line */
-    const tracker = new TaskTracker(gulp, this._bus);
+    const tracker = new TaskTracker(gulp, this.eventbus);
   }
 
   // lazily load task dependencies so task definitions at higher levels are injected as part of lower level chains
