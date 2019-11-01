@@ -1,18 +1,21 @@
 import {Gulp, TaskFunction} from 'gulp';
 import * as assert from 'assert';
+import * as StrongBus from 'strongbus';
 import * as DefaultRegistry from 'undertaker-registry';
 import * as asyncDone from 'async-done';
 import {autobind} from 'core-decorators';
 
+import {RegistryEvents} from './events';
 import {TaskContext, ContextConfig} from './taskContext';
 import {TaskTracker} from './taskTracker';
+
 
 type DoneCallback = (error?: any) => void;
 
 @autobind
 export class Registry<TConfig extends ContextConfig = ContextConfig> extends DefaultRegistry {
   private _context: TaskContext<TConfig>;
-  private _config: TConfig;
+  private _bus = new StrongBus.Bus<RegistryEvents>();
   private gulp: Gulp;
 
   constructor(
@@ -20,7 +23,7 @@ export class Registry<TConfig extends ContextConfig = ContextConfig> extends Def
   ) {
     super();
     assert(typeof config.rootPath === 'string', 'rootPath must be defined in Registry options');
-    this._config = config;
+    this._context = new TaskContext(config, this._bus);
   }
 
   public get context(): TaskContext<TConfig> {
@@ -31,9 +34,8 @@ export class Registry<TConfig extends ContextConfig = ContextConfig> extends Def
     super.init(gulp);
     // hackish
     this.gulp = gulp;
-    this._context = new TaskContext<TConfig>(this._config, gulp);
     /* tslint:disable-next-line */
-    const tracker = new TaskTracker(gulp);
+    const tracker = new TaskTracker(gulp, this._bus);
   }
 
   // lazily load task dependencies so task definitions at higher levels are injected as part of lower level chains
