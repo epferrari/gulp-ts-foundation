@@ -1,6 +1,6 @@
 {
   "name": "gulp-ts-foundation",
-  "version": "0.2.1",
+  "version": "0.2.0",
   "description": "Base registry of gulp tasks for ts project",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
@@ -10,7 +10,7 @@
     "install": "([ -d ./src ] && [ ! -d ./lib ] && mkdir lib && npm install . &&  npm run build) || echo ''",
     "prepare": "npm run build",
     "version": "git add -A src",
-    "postversion": "git push && git push --tags"
+    "postversion": "git push && git push --tags --force"
   },
   "repository": {
     "type": "git",
