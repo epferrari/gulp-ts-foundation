@@ -47,7 +47,7 @@
     "tslint": "^5.20.0",
     "typescript": "^3.6.4",
     "undertaker-registry": "^1.0.1",
-    "webpack": "^4.29.6",
+    "webpack": "^5.75.0",
     "webpack-dev-server": "^3.2.1"
   },
   "devDependencies": {
